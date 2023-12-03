@@ -22,6 +22,7 @@ function germanMonthToNumber(monthName) {
   // Convert the input month name to title case for comparison
   const formattedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1).toLowerCase();
 
+
   // Check if the month name exists in the months object
   if (formattedMonth in months) {
       const monthNumber = months[formattedMonth];
@@ -154,6 +155,7 @@ if (monthNumber !== null) {
 
     fetch(url)
     .then(response => response.json())
+    .catch(err => console.log(err))
     .then(data => {
 
 
@@ -275,6 +277,7 @@ if (monthNumber !== null) {
           setTimeout(function (){
             fetch(furl)
             .then(response => response.json())
+            .catch(err => console.log(err))
             .then(data => {
   
   
@@ -394,6 +397,7 @@ if (monthNumber !== null) {
           setTimeout(function (){
             fetch(furl)
           .then(response => response.json())
+          .catch(err => console.log(err))
           .then(data => {
 
 
@@ -538,8 +542,13 @@ $(document).ready(function () {
   
       loadTableData();
                 
+    }, 1000);
+    setTimeout(function (){
+  
+      checkMissingShift();
+    
+                
     }, 2000);
-
     
 		
     
@@ -551,3 +560,48 @@ $(document).ready(function () {
 		
 		
 	});
+
+  // Function to get a specific cell by row and column indexes
+  function getCellByIndexes(rowIndex, columnIndex) {
+    const table = document.querySelector('.centered'); // Change the selector according to your table's class or ID
+    const row = table.querySelectorAll('tr')[rowIndex];
+    if (row) {
+        const cell = row.querySelectorAll('td')[columnIndex];
+        return cell;
+    }
+  return null;
+}
+  function checkMissingShift()
+  {
+    for (var i = 1;i<=31;i++)
+    {
+      for ( var j = 1;j<=2;j++)
+      {
+        //first,second,etc 
+        var cell = getCellByIndexes(i,j);
+        if (cell.innerHTML === "Friday" || cell.innerHTML === "Thursday" || cell.innerHTML === "Wednesday" || cell.innerHTML === "Tuesday" || cell.innerHTML === "Monday")
+        {
+          //check ahead
+          var first_shift = getCellByIndexes(i,j+1);
+          var second_shift = getCellByIndexes(i,j+2);
+          var third_shift = getCellByIndexes(i,j+3);
+
+          if (first_shift.innerHTML === "" || second_shift.innerHTML === "" || third_shift.innerHTML === "")
+            {
+              cell.style.backgroundColor = "blue";
+            }
+        } else if (cell.innerHTML === "Saturday" || cell.innerHTML === "Sunday")
+        {
+           //check ahead
+           var first_shift = getCellByIndexes(i,j+1);
+           
+           var third_shift = getCellByIndexes(i,j+3);
+ 
+           if (first_shift.innerHTML === "" || third_shift.innerHTML === "")
+             {
+               cell.style.backgroundColor = "blue";
+             }
+        }
+      }
+    }
+  }
