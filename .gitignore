@@ -1,0 +1,4 @@
+CherrypyServer/*.json
+db.py
+logs.txt
+__pycache__
