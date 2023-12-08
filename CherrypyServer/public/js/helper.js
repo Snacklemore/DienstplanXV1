@@ -63,8 +63,10 @@ if (monthNumber !== null) {
   function finishEdit(cell) {
     var input = cell.querySelector('input');
     cell.textContent = input.value;
+    saveTableData();
     cell.onclick = function() {
       makeEditable(this);
+      
     };
   }
 
@@ -536,6 +538,11 @@ var admin = false;
 $(document).ready(function () {
     
     admin = sessionStorage.getItem('admin');
+    if (admin === "false")
+    {
+      var convert_controls = document.getElementById("convert_control")
+      convert_controls.style.display = "None";
+    }
     request();
     console.log("admin is "+ admin);
     setTimeout(function (){
@@ -604,4 +611,148 @@ $(document).ready(function () {
         }
       }
     }
+  }
+
+  function convertExcelToJson() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      console.error('No file selected.');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      const data = event.target.result;
+      const workbook = XLSX.read(data, { type: 'binary' });
+
+      const sheetName = workbook.SheetNames[0]; // Assuming you want data from the first sheet
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+
+      const jsonContent = JSON.stringify(jsonData, null, 2);
+      console.log('Excel file converted to JSON:', jsonContent);
+      // You can further process the JSON content as needed
+      
+      var table = document.querySelector('table tbody');
+      table.innerHTML = ''; // Clear existing table content
+      // Extract column headers (assuming they are consistent across rows)
+      const columnHeaders = Object.keys(jsonData[0]);
+
+      // Create table header row with column headers
+      const headerRow = document.createElement('tr');
+      columnHeaders.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+     // table.appendChild(headerRow);
+
+      outer_counter = 1;
+      jsonData.forEach(function(rowData, rowIndex) 
+      {
+        var row = document.createElement('tr');
+
+        // Create and append the row number cell
+        var numberCell = document.createElement('td');
+        numberCell.textContent = rowIndex + 1;
+        row.appendChild(numberCell);
+        var counter = 0;
+        console.log('Row Data:', rowData); // Log the row data for inspection
+
+        columnHeaders.forEach(header => {
+
+          const cellData = rowData[header]; // Use empty object if cellData is undefined/null
+          if (counter !== 5)
+            var cell = document.createElement('td');
+          else 
+            var cell = null;
+          if (cell === null)
+            return;
+          cell.textContent = cellData !== undefined ? cellData : ''; // Display cell data or empty string
+          if (counter === 5)
+            cell.textContent = ''; // Display cell data or empty string
+          //skip click function for days of the month
+          if (counter === 1 )
+          {
+            cell.onclick = function() {
+              if (admin === 'true')
+                makeEditable(this);
+            };
+          }
+
+          if (counter === 3 || 4)
+          {
+            cell.onclick = function() {
+              if (admin === 'true')
+                makeEditable(this);
+            };
+          }
+          var day_of_the_date = days_data[outer_counter-1];
+          if (counter === 2)
+            {
+              if (!(day_of_the_date === "Saturday") && !(day_of_the_date === "Sunday"))
+              {
+                cell.onclick = function() {
+                  if (admin === 'true')
+                    makeEditable(this);
+                };
+
+              } 
+            }
+          
+          row.appendChild(cell);
+          if (counter === 0)//counter==cell index per row exp: 0 === Tag, 1 === Frühschicht )
+          {
+            //fallback if days data wasnt loaded 9
+            
+             // request();
+
+            //days 
+            //get date (outer_counter)
+           
+            day_of_the_date = days_data[outer_counter-1];
+            
+            if (day_of_the_date === "Saturday")
+            {
+              cell.style.backgroundColor = 'red';
+
+            } 
+            if (day_of_the_date === "Sunday")
+            {
+              cell.style.backgroundColor = 'yellow';
+              
+            }
+              
+              cell.textContent = day_of_the_date;
+          
+          }
+          if (counter === 2)//Mittelschicht 
+          {
+            var day_of_the_date = days_data[outer_counter-1];
+            if (day_of_the_date === "Saturday")
+            {
+              cell.textContent = '';
+            }
+            if (day_of_the_date === "Sunday")
+            {
+              cell.textContent = '';              
+            }
+            //clear cell, no shift
+            
+          }
+          counter++;
+        });
+        table.appendChild(row);
+        outer_counter++;
+      });
+    };
+
+    reader.onerror = function(event) {
+      console.error('File could not be read:', event.target.error);
+    };
+
+    reader.readAsBinaryString(file);
   }

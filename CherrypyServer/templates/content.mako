@@ -4,8 +4,16 @@
 
 <%block name="PdfView">
 	<script src="static/js/helper.js"></script>
+
+	<div id="convert_control"> 
+		<input type="file" id="fileInput" />
+  		<button id="convert" onclick="convertExcelToJson()">Convert</button>
+	</div>
+	
 	<a id=monthdrop class='dropdown-trigger btn' href='#' data-target='dropdown1'>Change Month</a>
 	<a id=yeardrop class='dropdown-trigger btn' href='#' data-target='dropdown2'>Change Year</a>
+	
+	
 	<!-- Dropdown Structure -->
   	<ul id='dropdown1' class='dropdown-content'>
 		<li><a class='month' id=m1 >Januar</a></li>
